@@ -1,0 +1,47 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Ce fichier contient des commandes pour respecter
+% la typographie française, mais également pour 
+% les abréviations.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Évite veuves et orphelines
+\widowpenalty=10000
+\clubpenalty=10000 
+
+% Permet de modifier l'espace entre es lignes.
+\renewcommand{\baselinestretch}{1.1} 
+\onehalfspacing % Permet de mettre le reste du texte avec un interligne de 1,5 (recommandé pour les articles universitaires).
+
+% Chiffres romain
+\newcommand{\cRM}[1]{\MakeUppercase{\romannumeral #1}}	% Capital
+\newcommand{\cRm}[1]{\textsc{\romannumeral #1}}	% Petit majuscule
+\newcommand{\crm}[1]{\romannumeral #1} % Minuscule
+
+% Siècle
+\newcommand*{\siecle}[1]{%
+	\ifnum #1=1%
+		\cRm{#1}\textsuperscript{er}~siècle%
+	\else%
+		\cRm{#1}\textsuperscript{e}~siècle%
+	\fi%
+}%
+\newcommand*{\siecles}[2]{\cRm{#1}~-~\cRm{#2}\textsuperscript{e}~siècles}
+
+% Guillements
+\newcommand{\guill}[1]{\og #1\fg{}}
+
+% Nom d'auteur 
+\newcommand\auteur[2]{#1~\textsc{#2}\xspace}
+
+% Abréviations
+\newcommand{\ssi}{si et seulement si\xspace}
+\newcommand{\cad}{c'est-à-dire\xspace}
+\newcommand{\cf}[0]{\textit{cf.}\xspace} % Cf. avec espace à la suite
+\newcommand{\apjc}{apr. J.-C.\xspace} % après Jésus-Christ
+\newcommand{\avjc}{av. J.-C.\xspace} % avant Jésus-Christ
+\newcommand{\Mme}{M\textsuperscript{me}\xspace} % Madame
+\newcommand{\Mlle}{M\textsuperscript{lle}\xspace} % Mademoiselle
+\newcommand{\numero}{n\textsuperscript{o}\xspace} % numéro
+\newcommand{\Num}{N\textsuperscript{o}\xspace} % Numéro
+\newcommand{\nums}{n\textsuperscript{os}\xspace} % numéros
+\newcommand{\Nums}{N\textsuperscript{os}\xspace} % Numéros

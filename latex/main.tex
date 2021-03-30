@@ -1,0 +1,60 @@
+\documentclass{article}
+\usepackage[hmargin=2.5cm,vmargin=3cm]{geometry}
+
+% Packages
+\input{preambule/packages}
+% Pour rentrer du code dans le document
+\input{preambule/packages}
+% Nouvelles commandes pour la typographie
+\input{preambule/commandes_typo}
+% Nouvelles commandes pour les mathématiques
+\input{preambule/commandes_math}
+
+% Début du document
+\begin{document}
+
+% Permet de modifier l'espace entre les paragraphes pour la suite du document
+\setlength{\parskip}{5pt}
+
+% Page de garde
+\input{content/PageDeGarde}
+
+\newpage
+
+% Description du projet (groupe, ...)
+\input{content/Preambule}
+\newpage
+
+% Ajout de la table des matières
+\setcounter{tocdepth}{3} % Permet d'afficher dans la table des matières tous les niveaux de titres jusqu’au niveau \subsubsection inclus.
+\tableofcontents
+
+
+% Ajout de l'introduction
+\include{content/Introduction}
+\newpage
+
+% Ajout du contenu
+\include{content/Part1}
+
+
+% Ajout de la conclusion
+\include{content/Conclusion}
+\newpage
+
+% Ajout des annexes
+\newpage
+\appendix
+\appendixpage
+\addappheadtotoc
+\renewcommand{\figurename}{Appendice}
+\setcounter{figure}{0}
+\input{appendix/Appendice}
+\input{appendix/Code}
+
+% Bibliographie
+% \newpage
+% \bibliographystyle{plain}
+% \bibliography{references}
+
+\end{document}
