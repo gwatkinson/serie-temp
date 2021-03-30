@@ -1,4 +1,4 @@
-# Laod the libraries
+# Load the libraries
 library(tidyverse)
 library(rio)
 library(lubridate)
@@ -9,7 +9,7 @@ library(forecast)
 library(stats)
 
 
-# Dataset choisi : Indice CVS-CJO de la production industrielle (base 100 en 2015) - Fabrication de gaz industriels (NAF rév. 2, niveau classe, poste 20.11)
+# Dataset choisi : Indice CVS-CJO de la production industrielle (base 100 en 2015) - Fabrication de gaz industriels (NAF rï¿½v. 2, niveau classe, poste 20.11)
 # Lien : https://www.insee.fr/fr/information/3128533?CORRECTION=2238605&INDICATEUR=2765760
 # Import the df (using rio::import)
 df <- import(file="data/valeurs_mensuelles.csv", skip=2, setclass="tbl_df", header=TRUE)
