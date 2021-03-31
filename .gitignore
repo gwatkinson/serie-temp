@@ -1,8 +1,7 @@
 ### Perso ###
-data/
 *.zip
 *.csv
-
+!data/valeurs_mensuelles.csv
 
 ### R ###
 # History files
