@@ -25,4 +25,4 @@ Lien pour telecharger la série au format [CSV][csv].
 [repertoire-filtre]: https://www.insee.fr/fr/information/3128533?CORRECTION=2238608&INDICATEUR=2765760&PERIODICITE=2224021
 [serie]: https://www.insee.fr/fr/statistiques/serie/010537426
 [csv]: https://www.insee.fr/fr/statistiques/serie/telecharger/010537426?ordre=antechronologique&transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=2&anneeFin=2021
-[plot]: ../output/images/ts_plot.png
+[plot]: ../output/images/ts_plot_github.png
