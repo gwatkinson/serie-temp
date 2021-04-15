@@ -33,6 +33,10 @@ Téléchargement de la série choisie au format [CSV][csv].
 
 ![ts_plot.png][plot]
 
+## Site
+
+Petit site web avec les résultats : [:link: GitHub Pages][site]
+
 <!-->
 <!-->
 <!-->
@@ -43,3 +47,4 @@ Téléchargement de la série choisie au format [CSV][csv].
 [serie]: https://www.insee.fr/fr/statistiques/serie/010537426
 [csv]: https://www.insee.fr/fr/statistiques/serie/telecharger/010537426?ordre=antechronologique&transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=1&anneeFin=2021
 [plot]: ./output/images/ts_plot_github.png
+[site]: https://gwatkinson.github.io/serie-temp/
