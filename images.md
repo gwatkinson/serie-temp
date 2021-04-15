@@ -1,5 +1,7 @@
 # Images
 
+Retour au [README](./README.md#autres-graphiques).
+
 ## output/images/yearly_boxplot.png
 
 ![output/images/yearly_boxplot.png](./output/images/yearly_boxplot.png)
@@ -15,5 +17,3 @@
 ## output/images/ts_plot.png
 
 ![output/images/ts_plot.png](./output/images/ts_plot.png)
-
-Retour au [README](./README.md)
