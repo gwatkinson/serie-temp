@@ -31,7 +31,13 @@ Téléchargement de la série choisie au format [CSV][csv].
 
 ## Graphique
 
+### Visualisation de la série temporelle
+
 ![ts_plot.png][plot]
+
+### Autres graphiques
+
+Les autres graphiques du répos sont dans [images.md][images].
 
 ## Site
 
@@ -47,4 +53,5 @@ Petit site web avec les résultats : [:link: GitHub Pages][site]
 [serie]: https://www.insee.fr/fr/statistiques/serie/010537426
 [csv]: https://www.insee.fr/fr/statistiques/serie/telecharger/010537426?ordre=antechronologique&transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=1&anneeFin=2021
 [plot]: ./output/images/ts_plot_github.png
+[images]: ./images.md
 [site]: https://gwatkinson.github.io/serie-temp/

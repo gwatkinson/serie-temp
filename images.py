@@ -11,3 +11,4 @@ with open(md, "w") as f:
     for img in sorted_images:
         f.write(f"\n\n## {img}")
         f.write(f"\n\n![{img}](./{img})")
+    f.write("\n\nRetour au [README](./README.md)\n")
