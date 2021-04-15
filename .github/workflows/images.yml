@@ -1,0 +1,26 @@
+name: images
+
+on:
+  push:
+  page_build:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run python script
+        run: |
+          python images.py
+      - name: Commit changes
+        run: |
+          git checkout main
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -f images.md
+          git commit -m "Automatic commit : Update images"
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
