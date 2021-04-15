@@ -2,6 +2,7 @@
 *.zip
 *.csv
 !data/valeurs_mensuelles.csv
+**/__pycache__/**
 
 ### R ###
 # History files
