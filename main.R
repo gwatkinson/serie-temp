@@ -5,7 +5,8 @@ library(xts)
 library(ggplot2) # For plots
 library(forecast) # For ggtsdisplay; to plot ts, acf and pacf
 library(stats)
-
+library(astsa)
+library(portes)
 
 
 ## Load the data
@@ -64,37 +65,92 @@ acf(df$value, lag.max = 300, main = "Fonction d'auto-corrélation")
 pacf(df$value, main = "Fonction d'auto-corrélation partielle")
 
 
+
 # Differenciate the data to make it stationary
-ts2 <- diff(ts2)
+ts2 <- ts %>% diff(differences = 1, lag = 1) %>% diff(differences = 1, lag = 12) # %>% stl(s.window='periodic') %>% seasadj()
 ggtsdisplay(ts2, main = "Titre", xlab = "", ylab = "Value", theme = theme_bw())
 
-diff(log(df$value))
-
-lambda <- BoxCox.lambda(x = df$value, lower = -5, upper = 5)
-BoxCox(df$value, lambda = lambda)
-
-lambdadiff <- BoxCox.lambda(x = diff(df$value), lower = -5, upper = 5)
-xdiff <- BoxCox(diff(df$value), lambda = lambdadiff)
-
-s1 <- 12
-D <- 2
-d <- 2
-diff(diff(df$value, lag = s1, differences = D), lag = 1, differences = d)
+lambda <- BoxCox.lambda(x = ts2, lower = -5, upper = 5)
+lambda
+ts2 <- BoxCox(ts2, lambda = 1)
+ggtsdisplay(ts2, main = "Titre", xlab = "", ylab = "Value", theme = theme_bw())
 
 
 # Plot both time series
-ggplot() + 
-  geom_line(data = ts, aes(x = index(ts), y = coredata(ts)), color = "red") +
-  geom_line(data = ts2, aes(x = index(ts), y = coredata(ts2)), color = "blue") +
-  xlab('') +
-  ylab('Value')
+ggplot()+ 
+  geom_line(data = ts, aes(x = index(ts), y = coredata(ts)), color = "red")+
+  geom_line(data = ts2, aes(x = index(ts), y = coredata(ts2)), color = "blue")+
+  xlab('')+
+  ylab('Value')+
+  theme_minimal()
 
-# Fit ARIMA model
-(fit <- Arima(ts2, order = c(3,1,1)))
-checkresiduals(fit)
-autoplot(forecast(fit))
+# Fit ARIMA(2,1,0), (0,1,4)
+(res20 <- sarima(ts2,2,1,0))
+res20$ttable
+LjungBox(res20$fit)
+checkresiduals(res20$fit)
 
-(fit2 <- auto.arima(ts2)) # -> ARIMA(2,0,2)
-checkresiduals(fit2)
-autoplot(forecast(fit2))
+(res04 <- sarima(ts2,0,1,4))
+res04$ttable
+LjungBox(res04$fit)
+checkresiduals(res04$fit)
 
+(res11 <- sarima(ts2,1,1,1))
+res11$ttable
+LjungBox(res11$fit)
+checkresiduals(res11$fit)
+
+# Fit SARIMA
+params <- list(
+  list(xdata = ts, p = 1, d = 1, q = 1, P = 1, D = 1, Q = 1, S = 12, details = FALSE), 
+  list(xdata = ts, p = 1, d = 1, q = 2, P = 0, D = 1, Q = 1, S = 12, details = FALSE), 
+  list(xdata = ts, p = 2, d = 1, q = 2, P = 1, D = 1, Q = 1, S = 12, details = FALSE), 
+  list(xdata = ts, p = 1, d = 1, q = 2, P = 1, D = 1, Q = 1, S = 12, details = FALSE), 
+  list(xdata = ts, p = 2, d = 1, q = 2, P = 1, D = 1, Q = 2, S = 12, details = FALSE), 
+  list(xdata = ts, p = 2, d = 1, q = 4, P = 3, D = 1, Q = 0, S = 12, details = FALSE)
+)
+models <- list()
+for (p in params) {
+  res <- do.call(sarima, p)
+  models <- list(models, res)
+}
+
+res111111<-do.call(sarima(), c(ts2,1,1,1,1,1,1,12))
+res111111$ttable
+LjungBox(res111111$fit)
+checkresiduals(res111111$fit)
+
+res112011<-sarima(ts,1,1,2,0,1,1,12)
+res112011$ttable
+LjungBox(res112011$fit)
+checkresiduals(res112011$fit)
+
+res212111<-sarima(ts,2,1,2,1,1,1,12)
+res212111$ttable
+LjungBox(res212111$fit)
+checkresiduals(res212111$fit)
+
+res112111<-sarima(ts,1,1,2,1,1,1,12)
+res112111$ttable
+LjungBox(res112111$fit)
+checkresiduals(res112111$fit)
+
+res212112<-sarima(ts,2,1,2,1,1,2,12)
+res212112$ttable
+LjungBox(res212112$fit)
+checkresiduals(res212112$fit)
+
+res214310<-sarima(ts,2,1,4,3,1,0,12)
+res214310$ttable
+LjungBox(res214310$fit)
+checkresiduals(res214310$fit)
+
+# AIC / BIC scores
+aic <- AIC(res111111$fit, res112011$fit, res212111$fit, res112111$fit, res212112$fit, res214310$fit)
+which.min(aic$AIC)
+bic <- BIC(res111111$fit, res112011$fit, res212111$fit, res112111$fit, res212112$fit, res214310$fit)
+which.min(bic$BIC)
+
+# Autofit ARIMA model
+(autofit <- auto.arima(ts)) # -> ARIMA(1,1,1)(2,0,0)[12]
+checkresiduals(autofit)
