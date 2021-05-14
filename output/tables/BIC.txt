@@ -1,0 +1,15 @@
+Matrice des BIC
+
+         q=0      q=1      q=2
+p=0 2337.294 2312.767 2311.673
+p=1 2323.089 2311.231 2317.192
+p=2 2316.973 2317.211 2318.331
+p=3 2316.011 2321.876 2327.786
+
+---
+Minimum de la matrice
+      q=0   q=1   q=2
+p=0 FALSE FALSE FALSE
+p=1 FALSE  TRUE FALSE
+p=2 FALSE FALSE FALSE
+p=3 FALSE FALSE FALSE

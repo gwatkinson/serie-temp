@@ -1,0 +1,17 @@
+
+Call:
+lm(formula = value ~ date)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-24.227  -2.500  -0.003   2.428  38.690 
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)
+(Intercept) 27.37442   64.69624   0.423    0.672
+date        -0.01361    0.03226  -0.422    0.673
+
+Residual standard error: 5.568 on 370 degrees of freedom
+Multiple R-squared:  0.0004811,	Adjusted R-squared:  -0.00222 
+F-statistic: 0.1781 on 1 and 370 DF,  p-value: 0.6733
+

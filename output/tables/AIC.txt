@@ -1,0 +1,16 @@
+Matrice des AIC
+
+         q=0      q=1      q=2
+p=0 2333.375 2304.929 2299.916
+p=1 2315.252 2299.474 2301.516
+p=2 2305.216 2301.535 2298.737
+p=3 2300.335 2302.281 2304.273
+
+---
+Minimum de la matrice
+
+      q=0   q=1   q=2
+p=0 FALSE FALSE FALSE
+p=1 FALSE FALSE FALSE
+p=2 FALSE FALSE  TRUE
+p=3 FALSE FALSE FALSE
