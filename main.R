@@ -1,46 +1,49 @@
 ## Load the libraries
 library(dplyr) # For processing dataframe
-# library(lubridate)
 library(xts)
 library(ggplot2) # For plots
 library(forecast) # For ggtsdisplay; to plot ts, acf and pacf
 library(stats)
 library(astsa)
 library(portes)
+library(xtable) # For latex tables
+library(fUnitRoots) # Pour test racine unitaire
+library(tseries)
 
 
 ## Load the data
 # Chosen time series : Indice CVS-CJO de la production industrielle (base 100 en 2015) - Fabrication de gaz industriels (NAF rév. 2, niveau classe, poste 20.11)
-# Link : https://www.insee.fr/fr/information/3128533?CORRECTION=2238605&INDICATEUR=2765760
-
-# Import the df (using rio::import)
-df <- rio::import(file = "data/valeurs_mensuelles.csv", skip = 2, setclass = "tbl_df", header = TRUE)
-
+# Link : https://www.insee.fr/fr/statistiques/serie/010537426
+# Import the df(using rio::import)
+file <- "data/valeurs_mensuelles.csv"
+df <- rio::import(file = file, setclass = "tbl_df", skip = 2, header = TRUE)
+# Create the clean time series X
 # Remove V3 (because only value is 'A'), rename columns and convert dates to yearmon format (using dplyr)
-df %<>%
+X <- df %>%
   select(-V3) %>%
   rename(date = `PÃ©riode`, value = V2) %>%
   mutate(date = as.yearmon(date)) %>%
   arrange(date)
 
+
+## Question 1
 # Transform to xts object
-ts <- xts(df$value, order.by = df$date)
+ts <- xts(X$value, order.by = X$date)
 tformat(ts) <- "%Y-%m"
-
-
-
-## Plots
-# Plot with ggplot2
-p1 <- ggplot(data = df, aes(x = date, y = value))+
-  geom_line(color = "#00AFBB", size = 2)+
-  labs(title = "Indice CVS-CJO de la fabrication de gaz industriels entre 1990 et 2021", x = "", y = "Valeur de l'indice")+
-  theme_minimal()
-ggsave(filename = "ts_plot.png", plot = p1, path = "./output/images/", width = 8, height = 2.5)
-
+# Dataframe slices
+n <- 3
+slice <- arrange(df, `PÃ©riode`)[1:n,]
+png("output/images/df.png", height = n*30, width = 170)
+gridExtra::grid.table(slice)
+dev.off()
+sliceX <- X[1:n,]
+png("output/images/X.png", height = n*30, width = 145)
+gridExtra::grid.table(sliceX)
+dev.off()
 # Plot the time serie, acf and pacf (using ggtsdisplay)
-png("./output/images/ts_acf_pacf_plot.png")
+png("./output/images/ts_acf_pacf.png")
 p2 <- ggtsdisplay(
-  df$value,
+  X$value,
   plot.type = "partial",
   points = FALSE,
   main = "Indice CVS-CJO de la fabrication de gaz industriels entre 1990 et 2021",
@@ -49,108 +52,186 @@ p2 <- ggtsdisplay(
   theme = theme_minimal()
 )
 dev.off()
-# ggsave(filename = "ts_acf_pacf_plot.png", plot = p2, path = "./output/images/", width = 8, height = 7)
+# Plot with ggplot2
+p1 <- ggplot(data = X, aes(x = date, y = value))+
+  geom_line(color = "#00AFBB", size = 2)+
+  labs(title = "Indice CVS-CJO de la fabrication de gaz industriels entre 1990 et 2021", x = "", y = "Valeur de l'indice")+
+  theme_minimal()
+ggsave(filename = "ts_plot.png", plot = p1, path = "./output/images/", width = 8, height = 2.5)
 
-# Plot yearly boxplot
-png("./output/images/yearly_boxplot.png")
-year <- as.factor(format(filter(df, date != 2021)$date, "%Y"))
-boxplot(filter(df, date != 2021)$value~year, col = "lightblue", pch = 20, cex = 0.5, main = "Boxplot par année entre 1990 et 2020", xlab = "", ylab = "Valeur de l'indice")
+
+
+## Question 2
+# Differenciate the data to make it stationary
+Y <- ts %>% diff(differences = 1, lag = 1)
+value <- coredata(Y)[2:length(Y)]
+date <- index(Y)[2:length(Y)]
+# Check for constant and trend
+fit_diff <- lm(value ~ date)
+# Plot diff and regression
+p_diff <- ggplot(data.frame(value=value, date=date), aes(x = date, y = value)) +
+  geom_line(color = "#00AFBB", size = 1) +
+  stat_smooth(method = "lm", col = "red") +
+  labs(title = "Série différenciée", x = "", y = "") +
+  theme_minimal()
+ggsave(filename = "diff_ts.png", plot = p_diff, path = "./output/images/", width = 8, height = 2.5)
+# Test stationarity with adf test
+f <- file("output/tables/adf_test.txt", encoding = "iso-8859-1", open = "wt")
+capture.output(adfTest(Y, lags = 0, type = "nc"), file = f)
+close(f)
+f <- file("output/tables/lm_diff.txt", encoding = "iso-8859-1", open = "wt")
+capture.output(summary(fit_diff), file = f)
+close(f)
+
+
+## Question 3
+# Plot both time series
+tmp <- X
+tmp$Y <- coredata(Y)
+ba <- tmp %>% rename(X=value) %>% tidyr::gather(Série, value, -date)
+p_ba <- ggplot(ba, aes(x = date, y = value)) +
+  geom_line(aes(color = Série)) +
+  facet_grid(Série ~ ., scales = "free_y") +
+  labs(title = "Série avant et après transformation", x="", y="")
+ggsave(filename = "before_after.png", plot = p_ba, path = "./output/images/", width = 8, height = 6)
+
+
+## Question 4
+# Plot the time serie, acf and pacf (using ggtsdisplay)
+png("./output/images/acf_pacf.png")
+p2 <- ggtsdisplay(
+  Y,
+  plot.type = "partial",
+  points = FALSE,
+  main = "Série différenciée",
+  xlab = "",
+  ylab = "",
+  theme = theme_minimal(),
+  lag.max = 40
+)
 dev.off()
 
-# Statistics of the time serie
-summary(df$value)
-mean(df$value) # = 99.13244
-sd(df$value) # = 12.85422
-acf(df$value, lag.max = 300, main = "Fonction d'auto-corrélation")
-pacf(df$value, main = "Fonction d'auto-corrélation partielle")
+
+## Question 5
+# ARMA(3,2) ?
+x <- Y[2:length(Y)]
+pmax = 3
+qmax = 2
+mat <- matrix(NA,nrow=pmax+1,ncol=qmax+1) 
+rownames(mat) <- paste0("p=",0:pmax)
+colnames(mat) <- paste0("q=",0:qmax)
+AICs <- mat
+BICs <- mat
+pqs <- expand.grid(0:pmax,0:qmax)
+for (row in 1:dim(pqs)[1]) {
+  p <- pqs[row,1]
+  q <- pqs[row,2]
+  estim <- try(arima(ts, c(p,1,q), include.mean = F))
+  AICs[p+1,q+1] <- if (class(estim)=="try-error") NA else estim$aic
+  BICs[p+1,q+1] <- if (class(estim)=="try-error") NA else BIC(estim)
+}
+AICs
+AICs==min(AICs, na.rm = TRUE)
+BICs
+BICs==min(BICs, na.rm = TRUE)
+
+arima111 <- arima(ts, c(1,1,1), include.mean=F)
+arima212 <- arima(ts, c(2,1,2), include.mean=F)
 
 
-
-# Differenciate the data to make it stationary
-ts2 <- ts %>% diff(differences = 1, lag = 1) %>% diff(differences = 1, lag = 12) # %>% stl(s.window='periodic') %>% seasadj()
-ggtsdisplay(ts2, main = "Titre", xlab = "", ylab = "Value", theme = theme_bw())
-
-lambda <- BoxCox.lambda(x = ts2, lower = -5, upper = 5)
-lambda
-ts2 <- BoxCox(ts2, lambda = 1)
-ggtsdisplay(ts2, main = "Titre", xlab = "", ylab = "Value", theme = theme_bw())
-
-
-# Plot both time series
-ggplot()+ 
-  geom_line(data = ts, aes(x = index(ts), y = coredata(ts)), color = "red")+
-  geom_line(data = ts2, aes(x = index(ts), y = coredata(ts2)), color = "blue")+
-  xlab('')+
-  ylab('Value')+
-  theme_minimal()
-
-# Fit ARIMA(2,1,0), (0,1,4)
-(res20 <- sarima(ts2,2,1,0))
-res20$ttable
-LjungBox(res20$fit)
-checkresiduals(res20$fit)
-
-(res04 <- sarima(ts2,0,1,4))
-res04$ttable
-LjungBox(res04$fit)
-checkresiduals(res04$fit)
-
-(res11 <- sarima(ts2,1,1,1))
-res11$ttable
-LjungBox(res11$fit)
-checkresiduals(res11$fit)
-
-# Fit SARIMA
-params <- list(
-  list(xdata = ts, p = 1, d = 1, q = 1, P = 1, D = 1, Q = 1, S = 12, details = FALSE), 
-  list(xdata = ts, p = 1, d = 1, q = 2, P = 0, D = 1, Q = 1, S = 12, details = FALSE), 
-  list(xdata = ts, p = 2, d = 1, q = 2, P = 1, D = 1, Q = 1, S = 12, details = FALSE), 
-  list(xdata = ts, p = 1, d = 1, q = 2, P = 1, D = 1, Q = 1, S = 12, details = FALSE), 
-  list(xdata = ts, p = 2, d = 1, q = 2, P = 1, D = 1, Q = 2, S = 12, details = FALSE), 
-  list(xdata = ts, p = 2, d = 1, q = 4, P = 3, D = 1, Q = 0, S = 12, details = FALSE)
-)
-models <- list()
-for (p in params) {
-  res <- do.call(sarima, p)
-  models <- list(models, res)
+# Test residual autocorrelation
+Qtests <- function(series, k, fitdf=0){
+  pvals <- apply(matrix(1:k), 1, FUN=function(l){
+    pval <- if (l<=fitdf) NA else Box.test(series, lag=l, type="Ljung-Box", fitdf=fitdf)$p.value
+    return(c("lag"=l,"pval"=pval))
+  })    
+  return(t(pvals))
+}
+# Check coefficients significance
+signif <- function(estim){
+  coef <- estim$coef
+  se <- sqrt(diag(estim$var.coef))
+  t <- abs(coef/se)
+  pval <- (1-pnorm(t))*2
+  return(rbind(coef,se,t,pval))
 }
 
-res111111<-do.call(sarima(), c(ts2,1,1,1,1,1,1,12))
-res111111$ttable
-LjungBox(res111111$fit)
-checkresiduals(res111111$fit)
+arimafit <- function(estim){
+  adjust <- round(signif(estim),3)
+  pvals <- Qtests(estim$residuals, 24, length(estim$coef)-1)
+  pvals %<>% as_tibble %>% drop_na %>% mutate(">0.05" = (pval > 0.05)) %>% as.matrix
+  cat("Tests de nullité des coefficients :\n")
+  print(adjust)
+  cat("\nTests d'absence d'autocorrélation :\n")
+  print(pvals)
+}
 
-res112011<-sarima(ts,1,1,2,0,1,1,12)
-res112011$ttable
-LjungBox(res112011$fit)
-checkresiduals(res112011$fit)
 
-res212111<-sarima(ts,2,1,2,1,1,1,12)
-res212111$ttable
-LjungBox(res212111$fit)
-checkresiduals(res212111$fit)
+res212<-sarima(ts,2,1,2, no.constant = T)
+res212$ttable
+LjungBox(res212$fit)
+checkresiduals(res212$fit)
 
-res112111<-sarima(ts,1,1,2,1,1,1,12)
-res112111$ttable
-LjungBox(res112111$fit)
-checkresiduals(res112111$fit)
+res0113<-sarima(ts,0,1,13, no.constant = T)
+res0113$ttable
+LjungBox(res0113$fit)
+checkresiduals(res0113$fit)
 
-res212112<-sarima(ts,2,1,2,1,1,2,12)
-res212112$ttable
-LjungBox(res212112$fit)
-checkresiduals(res212112$fit)
+res2113<-sarima(ts,2,1,13, no.constant = T)
+res2113$ttable
+LjungBox(res2113$fit)
+checkresiduals(res2113$fit)
 
-res214310<-sarima(ts,2,1,4,3,1,0,12)
-res214310$ttable
-LjungBox(res214310$fit)
-checkresiduals(res214310$fit)
 
-# AIC / BIC scores
-aic <- AIC(res111111$fit, res112011$fit, res212111$fit, res112111$fit, res212112$fit, res214310$fit)
-which.min(aic$AIC)
-bic <- BIC(res111111$fit, res112011$fit, res212111$fit, res112111$fit, res212112$fit, res214310$fit)
-which.min(bic$BIC)
 
-# Autofit ARIMA model
-(autofit <- auto.arima(ts)) # -> ARIMA(1,1,1)(2,0,0)[12]
-checkresiduals(autofit)
+f <- file("output/tables/AIC.txt", encoding = "iso-8859-1", open = "wt")
+sink(file = f)
+"Matrice des AIC"
+AICs
+print("")
+"Minimum de la matrice"
+AICs==min(AICs, na.rm = TRUE)
+sink()
+close(f)
+
+f <- file("output/tables/BIC.txt", encoding = "iso-8859-1", open = "wt")
+sink(file = f)
+"Matrice des BIC"
+BICs
+print("")
+"Minimum de la matrice"
+BICs==min(BICs, na.rm = TRUE)
+sink()
+close(f)
+
+png(filename = "output/images/arima111.png")
+sarima(ts, 1, 1, 1, no.constant = T)
+dev.off()
+
+png(filename = "output/images/arima212.png")
+sarima(ts, 2, 1, 2, no.constant = T)
+dev.off()
+
+png(filename = "output/images/arima0113.png")
+sarima(ts, 0, 1, 13, no.constant = T)
+dev.off()
+
+png(filename = "output/images/arima2113.png")
+sarima(ts, 2, 1, 13, no.constant = T)
+dev.off()
+
+f <- file("output/tables/test111.txt", encoding = "iso-8859-1", open = "wt")
+capture.output(arimafit(arima111), file = f)
+close(f)
+
+f <- file("output/tables/test212.txt", encoding = "iso-8859-1", open = "wt")
+capture.output(arimafit(arima212), file = f)
+close(f)
+
+f <- file("output/tables/test2113.txt", encoding = "iso-8859-1", open = "wt")
+capture.output(arimafit(res2113$fit), file = f)
+close(f)
+
+f <- file("output/tables/test0113.txt", encoding = "iso-8859-1", open = "wt")
+capture.output(arimafit(res0113$fit), file = f)
+close(f)
